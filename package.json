@@ -1,0 +1,19 @@
+{
+  "name": "flashcards-util",
+  "version": "1.0.0",
+  "description": "project status: idea only. The idea is not even finished yet. Exploring.",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack",
+    "watch": "webpack --watch"
+
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jquery": "^3.4.1",
+    "papaparse": "^5.0.0"
+  }
+}
