@@ -19,18 +19,20 @@ api.getAll().then(function(cardsList){
   }
 
   var displayer=new(function($main){
-    let $el=$(`<div class="flashcard-container"></div>`);
-    $el.appendTo($main);
+    let $flashField=$(`<div class="flashcard-container"></div>`);
+    let $addField=$(`<div class="editor-container"></div>`);
+    $flashField.appendTo($main);
+    $addField.appendTo($main);
     //ordered by confidence
     let userTestFuction=[
       function(card,answerCallback){
         //confidence 0: choose among two options
         console.log("gui start");
         let $question=$(`<span class="question confidence-0"> ${card.a}</span>`);
-        let $input=$(`<input type="text"></input>`);
-        let $evaluate=$(`<button>evaluate</button>`);
+        let $input=$(`<input type="text" class="answer-type-text"></input>`);
+        let $evaluate=$(`<button class="primary-button">evaluate</button>`);
         let evaluator=new RegExp("\\b"+card.b_accept+"\\b","gi");
-        $el.append([$question,$input,$evaluate]);
+        $flashField.append([$question,$input,$evaluate]);
         $input.on("input type change",function(){
           console.log($input.val().match(evaluator));
         });
@@ -43,10 +45,10 @@ api.getAll().then(function(cardsList){
         //confidence 1: choose among six options
         console.log("gui start");
         let $question=$(`<span class="question confidence-1"> ${card.a}</span>`);
-        let $input=$(`<input type="text"></input>`);
-        let $evaluate=$(`<button>evaluate</button>`);
+        let $input=$(`<input type="text" class="answer-type-text"></input>`);
+        let $evaluate=$(`<button class="primary-button">evaluate</button>`);
         let evaluator=new RegExp("\\b"+card.b_accept+"\\b","gi");
-        $el.append([$question,$input,$evaluate]);
+        $flashField.append([$question,$input,$evaluate]);
         $input.on("input type change",function(){
           console.log($input.val().match(evaluator));
         });
@@ -59,10 +61,10 @@ api.getAll().then(function(cardsList){
         //confidence 2: choose syllabes in order
         console.log("gui start");
         let $question=$(`<span class="question confidence-2"> ${card.a}</span>`);
-        let $input=$(`<input type="text"></input>`);
-        let $evaluate=$(`<button>evaluate</button>`);
+        let $input=$(`<input type="text" class="answer-type-text"></input>`);
+        let $evaluate=$(`<button class="primary-button">evaluate</button>`);
         let evaluator=new RegExp("\\b"+card.b_accept+"\\b","gi");
-        $el.append([$question,$input,$evaluate]);
+        $flashField.append([$question,$input,$evaluate]);
         $input.on("input type change",function(){
           console.log($input.val().match(evaluator));
         });
@@ -75,10 +77,10 @@ api.getAll().then(function(cardsList){
         //confidence 3: type, good text is highlighted
         console.log("gui start");
         let $question=$(`<span class="question confidence-3"> ${card.a}</span>`);
-        let $input=$(`<input type="text"></input>`);
-        let $evaluate=$(`<button>evaluate</button>`);
+        let $input=$(`<input type="text" class="answer-type-text"></input>`);
+        let $evaluate=$(`<button class="primary-button">evaluate</button>`);
         let evaluator=new RegExp("\\b"+card.b_accept+"\\b","gi");
-        $el.append([$question,$input,$evaluate]);
+        $flashField.append([$question,$input,$evaluate]);
         $input.on("input type change",function(){
           console.log($input.val().match(evaluator));
         });
@@ -91,10 +93,10 @@ api.getAll().then(function(cardsList){
         //confidence 4: i don't know yet.
         console.log("gui start");
         let $question=$(`<span class="question confidence-4"> ${card.a}</span>`);
-        let $input=$(`<input type="text"></input>`);
-        let $evaluate=$(`<button>evaluate</button>`);
+        let $input=$(`<input type="text" class="answer-type-text"></input>`);
+        let $evaluate=$(`<button class="primary-button">evaluate</button>`);
         let evaluator=new RegExp("\\b"+card.b_accept+"\\b","gi");
-        $el.append([$question,$input,$evaluate]);
+        $flashField.append([$question,$input,$evaluate]);
         $input.on("input type change",function(){
           console.log($input.val().match(evaluator));
         });
@@ -107,10 +109,10 @@ api.getAll().then(function(cardsList){
         //confidence 5: type, no clues given
         console.log("gui start");
         let $question=$(`<span class="question confidence-5"> ${card.a}</span>`);
-        let $input=$(`<input type="text"></input>`);
-        let $evaluate=$(`<button>evaluate</button>`);
+        let $input=$(`<input type="text" class="answer-type-text"></input>`);
+        let $evaluate=$(`<button class="primary-button">evaluate</button>`);
         let evaluator=new RegExp("\\b"+card.b_accept+"\\b","gi");
-        $el.append([$question,$input,$evaluate]);
+        $flashField.append([$question,$input,$evaluate]);
         $input.on("input type change",function(){
           console.log($input.val().match(evaluator));
         });
@@ -121,16 +123,48 @@ api.getAll().then(function(cardsList){
       },
     ];
     function displayQuestion(card){
-      $el.html("");
+      $flashField.html("");
       userTestFuction[Math.floor(card.confidence)](card,function(score){
         card.appendScore(score);
         console.log("user scored",score,card);
         nextQuestion();
       });
     };
+    
+    function displayAddForm(){
+      $addField.html("");
+      var fields=[
+        // "unique",
+        "a",
+        "a_accept",
+        "b",
+        "b_accept",
+        "mnem",
+        // "lastpracticed",
+        // "history"
+      ];
+      var newCard={};
+      var el$=[];
+      for(let field of fields){
+        let $question=$(`<span class="field-title field-${field}-title">${field}</span>`);
+        let $input=$(`<input type="text" class="field-${field}-input field-input"></input>`);
+        $input.on("input type change",function(){
+          newCard[field]=$input.val();
+          console.log(newCard);
+        });
+        el$.push($question,$input);
+      }
+      let $submit=$(`<button class="primary-button">submit</button>`);
+      el$.push($submit);
+      $addField.append(el$);
+      $submit.on("click",function(){
+        api.addCards([newCard]).then(console.log).catch(console.error);
+      });
+    };
     function nextQuestion(){
       displayQuestion(chooseNextCardToPractice());
     };
     nextQuestion();
+    displayAddForm();
   })($main);
 }).catch(console.error);

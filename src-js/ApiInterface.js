@@ -17,6 +17,13 @@ const ApiInterface=function(){
             console.log("th",a,props[a]);
             this[a]=props[a];
         }
+        this.getBasicData=function(){
+            var ret={}
+            for(var a in props){
+                ret[a]=props[a];
+            }
+            return ret;
+        }
         function calculateConfidence(){
             if(!self.history){
                 console.error("card doesn't have history field",self);
@@ -42,6 +49,7 @@ const ApiInterface=function(){
                 .then(r=>console.log("saved local changes into database",r))
                 .catch(r=>console.error("error saving local changes into database",r));
         }
+        
         function updateInDatabase(){
             let ret = new Promise(function(resolve,reject){
                 $.ajax(`./api`,{
@@ -78,8 +86,28 @@ const ApiInterface=function(){
         calculateConfidence();
         updatePriority();
     }
+    this.addCards=function(cardslist){
+        let ret = new Promise(function(resolve,reject){
+            $.ajax(`./api`,{
+                dataType: "json",
+                data:{
+                    action:"add",
+                    cards:cardslist//.map(itm=>itm.getBasicData())
+                }
+            }).then(function(contents){
+                console.log(contents);
+                if(contents.error){
+                    console.warn("Ajax call succeeded, but API failed");
+                    reject(new Error(contents));
+                }else{
+                    resolve(contents);
+                }
+            }).catch(reject);
+        });
+        return ret;
+    }
+    window.addCards=this.addCards;
     this.getAll=function(){
-
         let ret = new Promise(function(resolve,reject){
             $.ajax(`./api`,{
                 dataType: "json",

@@ -1,0 +1,91 @@
+@import url(http://fonts.googleapis.com/css?family=Lora:400,400italic,700italic);
+body{
+    font:lora;
+    font-size:30px;
+}
+.flashcard-container .question{
+    text-align: center;
+    display: block;
+}
+.editor-container .field-title::after{
+    content: ":";
+}
+.flashcard-container .answer-type-text, .editor-container .field-input {
+    width: 180px;
+    background: transparent;
+    border: none;
+    border-bottom: solid 2px;
+    text-align: center;
+    display: inline-block;
+    font-family: unset;
+    font-size: unset;
+}
+.flashcard-container .primary-button, .editor-container .primary-button  {
+    font-size: unset;
+    font-family: unset;
+    width: 102%;
+    text-align: center;
+    display: block;
+    background-color: transparent;
+    position: absolute;
+    bottom: -2px;
+    padding-bottom:5px;
+    padding-top:3px;
+    left: -1%;
+    border: solid 1px #0004;
+    cursor: pointer;
+}
+.flashcard-container .primary-button:hover, .editor-container .primary-button:hover {
+    background-color: #FFF9;
+}
+.flashcard-container, .editor-container {
+    position: relative;
+    overflow: hidden;
+    -webkit-box-sizing: content-box;
+    -moz-box-sizing: content-box;
+    box-sizing: content-box;
+    width: 300px;
+    min-height: 140px;
+    padding-bottom:50px;/*gives space for the button*/
+    border: 1px solid rgb(136,137,1);
+    -webkit-border-radius: 9px;
+    border-radius: 9px;
+    color: black;
+    -o-text-overflow: ellipsis;
+    text-overflow: ellipsis;
+    background-position: 50% 50%;
+    -webkit-background-origin: padding-box;
+    background-origin: padding-box;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
+    -webkit-background-size: auto auto;
+    background-size: auto auto;
+    -webkit-box-shadow: 3px 3px 4px 0 rgb(0,0,0);
+    box-shadow: 3px 3px 4px 0 rgba(0,0,0,0.4);
+}
+.flashcard-container{
+    text-align: center;
+    
+    background-color: rgb(234,226,215);
+    background: -webkit-linear-gradient(-90deg, rgba(234,226,215,1) 0, rgba(252,249,244,1) 100%);
+    background: -moz-linear-gradient(180deg, rgba(234,226,215,1) 0, rgba(252,249,244,1) 100%);
+    background: linear-gradient(180deg, rgba(234,226,215,1) 0, rgba(252,249,244,1) 100%);
+        background-position-x: 0%;
+        background-position-y: 0%;
+        background-size: auto;
+        background-origin: padding-box;
+        background-clip: border-box;
+}
+.editor-container{
+    
+    background-color: rgb(226,215,234);
+    background: -webkit-linear-gradient(-90deg, rgba(226,215,234,1) 0, rgba(249,244,252,1) 100%);
+    background: -moz-linear-gradient(180deg, rgba(226,215,234,1) 0, rgba(249,244,252,1) 100%);
+    background: linear-gradient(180deg, rgba(226,215,234,1) 0, rgba(249,244,252,1) 100%);
+        background-position-x: 0%;
+        background-position-y: 0%;
+        background-size: auto;
+        background-origin: padding-box;
+        background-clip: border-box;
+
+}

@@ -25,7 +25,7 @@ fields:
 * a_accept: regex of what constitutes acceptable sidea
 * b: name of side b
 * b_accept: regex of what constitutes acceptable sideb
-* mnem: mnemonic; a phrase or &gt;img &lt; for a picture (not html syntax, just "<img the_url>")
+* mnem: mnemonic; a phrase or &lt;img&gt;  for a picture (not html syntax, just "&lt;img the_url&gt;")
 * lastpracticed: last time it was practiced
 * history: string of last scores from 1 to 5, representing success. 
   * only a certain amount has to be taken, e.g. 10 last tries.
