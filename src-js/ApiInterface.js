@@ -14,7 +14,7 @@ const ApiInterface=function(){
     let Card=function(props){
         let self=this;
         for(var a in props){
-            console.log("th",a,props[a]);
+            // console.log("th",a,props[a]);
             this[a]=props[a];
         }
         this.getBasicData=function(){

@@ -20,23 +20,28 @@ body{
     font-family: unset;
     font-size: unset;
 }
-.flashcard-container .primary-button, .editor-container .primary-button  {
+button{
     font-size: unset;
     font-family: unset;
-    width: 102%;
+    background-color: transparent;
+    border: solid 1px #0004;
+    cursor: pointer;
+}
+button:hover{
+    background-color: #FFF9;
+}
+.flashcard-container .primary-button, .editor-container .primary-button  {
     text-align: center;
     display: block;
-    background-color: transparent;
+    width: 102%;
     position: absolute;
     bottom: -2px;
     padding-bottom:5px;
     padding-top:3px;
     left: -1%;
-    border: solid 1px #0004;
-    cursor: pointer;
 }
-.flashcard-container .primary-button:hover, .editor-container .primary-button:hover {
-    background-color: #FFF9;
+.flashcard-container .options-field{
+    display:block;
 }
 .flashcard-container, .editor-container {
     position: relative;

@@ -26,9 +26,17 @@ api.getAll().then(function(cardsList){
 
     function getPhrase(card,side){
       if(!card[side+"_phrase"])card[side+"_phrase"]=card[side];
-      let ret=`<span class="example-phrase-${side}">${card[side+"_phrase"]}</span>`;
+      let phrasecont;
+      let rexp=new RegExp(card[side+"_accept"]?card[side+"_accept"]:card[side],"gi")
+      console.log("regexp",rexp);
+      if(card[side+"_phrase"].match(rexp)){
+        phrasecont=card[side+"_phrase"].replace(rexp,`<span class="target-word">$&</span>`);
+      }else{
+        phrasecont=`${card[side+"_phrase"]} (${card[side]})`;
+
+      }
+      let ret=`<span class="example-phrase-${side}">${phrasecont}</span>`;
       // ret+="-"+card[side+"_accept"];
-      ret=ret.replace(new RegExp(card[side+"_accept"],"gi"),`<span class="target-word">$&</span>`);
       return ret;
     }
     function getRandomSide(){
@@ -40,7 +48,7 @@ api.getAll().then(function(cardsList){
         //confidence 0: choose among two options
         let side=getRandomSide();
         let el$=[];
-        let $question=$(`<span class="question confidence-0"> ${getPhrase(card,side[0])}</span>`);
+        let $question=$(`<span class="question confidence-0">${getPhrase(card,side[0])}</span>`);
         let $input=$(`<input type="text" class="answer-type-text"></input>`);
         el$.push($question,$input);
         let options=[card[side[1]]];
@@ -86,7 +94,7 @@ api.getAll().then(function(cardsList){
         let options=[card[side[1]]];
         let $optionsField=$(`<span class="options-field"></span>`);
         el$.push($optionsField);
-        for(let a=0; a<6; a++){
+        for(let a=0; a<5; a++){
           let otherCardN=Math.round(Math.random(cardsList.length-1));
           while(cardsList[otherCardN]==card){
             otherCardN=Math.round(Math.random(cardsList.length-1));
@@ -230,24 +238,16 @@ api.getAll().then(function(cardsList){
     function displayQuestion(card){
       $flashField.html("");
       userTestFuction[Math.floor(card.confidence)](card,function(score){
-        $flashField.html(`<span class="result-feedback">${score}</span>`);
+        $flashField.html(`<span class="result-feedback">
+          <span class="score">${score}</span>
+          <span class="correct">${card.a}-&gt;${card.b}</span>
+        </span>`);
         card.appendScore(score);
         console.log("user scored",score,card);
-        setTimeout(nextQuestion,500);
+        setTimeout(nextQuestion,1000);
       });
     };
 
-    
-    window.testUserTestFunction=function(n){
-      $flashField.html("");
-      var card=chooseNextCardToPractice();
-      userTestFuction[n](card,function(score){
-        $flashField.html(`<span class="result-feedback">${score}</span>`);
-        card.appendScore(score);
-        console.log("user scored",score,card);
-        setTimeout(nextQuestion,500);
-      });
-    };
     
     function displayAddForm(){
       $addField.html("");
@@ -269,6 +269,7 @@ api.getAll().then(function(cardsList){
         let $input=$(`<input type="text" class="field-${field[0]}-input field-input"></input>`);
         this.val=function(str){
           $input.val(str);
+          $input.trigger('change');
         }
         let inputCallback=false;
         this.onInput=function(cb){inputCallback=cb}
@@ -298,7 +299,11 @@ api.getAll().then(function(cardsList){
     function nextQuestion(){
       displayQuestion(chooseNextCardToPractice());
     };
-    nextQuestion();
+    if(cardsList.length>2){
+      nextQuestion();
+    }else{
+      $flashField.html("there needs to be at least two cards to start");
+    }
     displayAddForm();
   })($main);
 }).catch(console.error);

@@ -6,19 +6,18 @@ $resp['debug']=$_GET;
 $database=false;
 $databaseColumns=false;
 $dataAddr = './data/cards/00.csv';
-function backupCheck(){
+function backupCheck($force=false){
     global $dataAddr;
     global $resp;
     $resp['database-backup-check']=Array();
     $dataFolder;
     preg_match("/([^\/]*\/)+/",$dataAddr,$dataFolder);
     $dataFolder=$dataFolder[0];
-    print_r($dataFolder);
     $backups=scandir($dataFolder);
     rsort($backups);
     $newestBackup=intval($backups[0]);
     $resp['database-backup-check']['newest-backup']=$newestBackup;
-    if($newestBackup+(7*24*60*600)<time()){
+    if($newestBackup+(7*24*60*600)<time() || $force){
         $naddr=$dataFolder."".time().".backpup.csv";
         copy ($dataAddr,$naddr);
         $resp['database-backup-check']['backup-performed']=$naddr;
@@ -72,6 +71,7 @@ function writeDatabase(){
     global $dataAddr;
     global $database;
     global $databaseColumns;
+    backupCheck();
     try{
         $handle = fopen ($dataAddr,'w+');
         fputcsv($handle,$databaseColumns);
@@ -100,6 +100,10 @@ switch ($actionName) {
     case 'get':{
         readDatabase();
         $resp['cards']=$database;
+        break;
+    }
+    case 'backup':{
+        backupCheck(true);
         break;
     }
     case 'update':{
