@@ -27,49 +27,130 @@ api.getAll().then(function(cardsList){
     let userTestFuction=[
       function(card,answerCallback){
         //confidence 0: choose among two options
-        console.log("gui start");
+        let el$=[];
         let $question=$(`<span class="question confidence-0"> ${card.a}</span>`);
         let $input=$(`<input type="text" class="answer-type-text"></input>`);
+        el$.push($question,$input);
+        let options=[card.b];
+        let otherCardN=Math.round(Math.random(cardsList.length-1));
+        while(cardsList[otherCardN]==card){
+          otherCardN=Math.round(Math.random(cardsList.length-1));
+        }
+        options.push(
+          cardsList[otherCardN].b
+        );
+        options.sort(function() {
+          return .5 - Math.random();
+        });
+        let $optionsField=$(`<span class="options-field"></span>`);
+        el$.push($optionsField);
+        for(let optionText of options){
+          let $option=$(`<button class="option">${optionText}</button>`);
+          $optionsField.append($option);
+          $option.on("click",function(){
+            $input[0].value=(optionText)
+          });
+        }
         let $evaluate=$(`<button class="primary-button">evaluate</button>`);
+        el$.push($evaluate);
         let evaluator=new RegExp("\\b"+card.b_accept+"\\b","gi");
-        $flashField.append([$question,$input,$evaluate]);
+        $flashField.append(el$);
         $input.on("input type change",function(){
           console.log($input.val().match(evaluator));
         });
         $evaluate.on("click",function(){
-          answerCallback($input.val().match(evaluator)?5:card.confidence-1);
+          answerCallback($input.val().match(evaluator)?5:0);
           console.log($input.val().match(evaluator)?true:false);
         });
       },
       function(card,answerCallback){
         //confidence 1: choose among six options
-        console.log("gui start");
-        let $question=$(`<span class="question confidence-1"> ${card.a}</span>`);
+        let el$=[];
+        let $question=$(`<span class="question confidence-0"> ${card.a}</span>`);
         let $input=$(`<input type="text" class="answer-type-text"></input>`);
+        el$.push($question,$input);
+        let options=[card.b];
+        let $optionsField=$(`<span class="options-field"></span>`);
+        el$.push($optionsField);
+        for(let a=0; a<6; a++){
+          let otherCardN=Math.round(Math.random(cardsList.length-1));
+          while(cardsList[otherCardN]==card){
+            otherCardN=Math.round(Math.random(cardsList.length-1));
+          }
+          options.push(
+            cardsList[otherCardN].b
+          );
+        }
+        options.sort(function() {
+          return .5 - Math.random();
+        });
+        for(let optionText of options){
+          let $option=$(`<button class="option">${optionText}</button>`);
+          $optionsField.append($option);
+          $option.on("click",function(){
+            $input[0].value=(optionText)
+          });
+        }
         let $evaluate=$(`<button class="primary-button">evaluate</button>`);
+        el$.push($evaluate);
         let evaluator=new RegExp("\\b"+card.b_accept+"\\b","gi");
-        $flashField.append([$question,$input,$evaluate]);
+        $flashField.append(el$);
         $input.on("input type change",function(){
           console.log($input.val().match(evaluator));
         });
         $evaluate.on("click",function(){
-          answerCallback($input.val().match(evaluator)?5:card.confidence-1);
+          answerCallback($input.val().match(evaluator)?5:0);
           console.log($input.val().match(evaluator)?true:false);
         });
       },
       function(card,answerCallback){
         //confidence 2: choose syllabes in order
-        console.log("gui start");
-        let $question=$(`<span class="question confidence-2"> ${card.a}</span>`);
+        let el$=[];
+        let $question=$(`<span class="question confidence-0"> ${card.a}</span>`);
         let $input=$(`<input type="text" class="answer-type-text"></input>`);
+        el$.push($question,$input);
+        let $optionsField=$(`<span class="options-field"></span>`);
+        el$.push($optionsField);
+        function arbitrarySplit(string){
+          if(string.length>30){
+            return string.match(/([^\s]{2,100})|[^\s]+/g);
+          }else if(string.length>10){
+            return string.match(/([^\s]{2,3})|[^\s]+/g);
+          }else if(string.length>3){
+            return string.match(/([^\s]{2})|[^\s]+/g);
+          }else{
+            return string.match(/./g);
+          }
+        }
+        let options=arbitrarySplit(card.b);
+        for(let a=0; a<3; a++){
+          let otherCardN=Math.round(Math.random(cardsList.length-1));
+          while(cardsList[otherCardN]==card){
+            otherCardN=Math.round(Math.random(cardsList.length-1));
+          }
+          options=options.concat(
+            arbitrarySplit(cardsList[otherCardN].b)
+          );
+        }
+        options.sort(function() {
+          return .5 - Math.random();
+        });
+        for(let optionText of options){
+          let $option=$(`<button class="option">${optionText}</button>`);
+          $optionsField.append($option);
+          $option.on("click",function(){
+            $input[0].value+=optionText
+          });
+        }
         let $evaluate=$(`<button class="primary-button">evaluate</button>`);
+        el$.push($evaluate);
         let evaluator=new RegExp("\\b"+card.b_accept+"\\b","gi");
-        $flashField.append([$question,$input,$evaluate]);
+        $flashField.append(el$);
         $input.on("input type change",function(){
           console.log($input.val().match(evaluator));
         });
         $evaluate.on("click",function(){
-          answerCallback($input.val().match(evaluator)?5:card.confidence-1);
+          answerCallback($input.val().match(evaluator)?5:0);
           console.log($input.val().match(evaluator)?true:false);
         });
       },
@@ -125,9 +206,22 @@ api.getAll().then(function(cardsList){
     function displayQuestion(card){
       $flashField.html("");
       userTestFuction[Math.floor(card.confidence)](card,function(score){
+        $flashField.html(`<span class="result-feedback">${score}</span>`);
         card.appendScore(score);
         console.log("user scored",score,card);
-        nextQuestion();
+        setTimeout(nextQuestion,500);
+      });
+    };
+
+    
+    window.testUserTestFunction=function(n){
+      $flashField.html("");
+      var card=chooseNextCardToPractice();
+      userTestFuction[n](card,function(score){
+        $flashField.html(`<span class="result-feedback">${score}</span>`);
+        card.appendScore(score);
+        console.log("user scored",score,card);
+        setTimeout(nextQuestion,500);
       });
     };
     

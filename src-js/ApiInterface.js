@@ -1,6 +1,6 @@
 import $ from "jQuery";
 // import Papa from "papaparse";
-const scoreHistoryLength=10;
+const scoreHistoryLength=4;
 const confidenceWeight=1;
 const dateWeight=30/24/60; //30 days weighs same as 1 in confidence, 5 being that it's always answered correct
 const confidenceIdeal=5;
