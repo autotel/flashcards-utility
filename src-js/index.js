@@ -252,35 +252,42 @@ api.getAll().then(function(cardsList){
     function displayAddForm(){
       $addField.html("");
       var fields=[
-        // "unique",
-        "a",
-        "a_phrase",
-        "a_accept",
-        "b",
-        "b_phrase",
-        "b_accept",
-        "mnem",
-        // "lastpracticed",
-        // "history"
+        ["a","english"],
+        ["a_phrase","phrase"],
+        ["a_accept","regexp"],
+        ["b","finnish"],
+        ["b_phrase","phrase"],
+        ["b_accept","regexp"],
+        ["mnem","mnemonic"],
       ];
       var newCard={};
       var el$=[];
-      for(let field of fields){
-        let $question=$(`<span class="field-title field-${field}-title">${field}</span>`);
-        let $input=$(`<input type="text" class="field-${field}-input field-input"></input>`);
-        if(field=="a"||field=="b"){
-          $input.on("input type change",function(){
-            newCard[field]=$input.val();
-            console.log(newCard);
-          });
-        }else{
-          $input.on("input type change",function(){
-            newCard[field]=$input.val();
-            console.log(newCard);
-          });
+      var fieldEls=[];
+      function FieldEl(field){
+        fieldEls[field[0]]=this;
+        let $question=$(`<span class="field-title field-${field[0]}-title">${field[1]}</span>`);
+        let $input=$(`<input type="text" class="field-${field[0]}-input field-input"></input>`);
+        this.val=function(str){
+          $input.val(str);
         }
+        let inputCallback=false;
+        this.onInput=function(cb){inputCallback=cb}
+        $input.on("input type change",function(){
+          newCard[field[0]]=$input.val();
+          console.log(newCard);
+          if(inputCallback)inputCallback($input);
+        });
         el$.push($question,$input);
       }
+      for(let field of fields){
+        new FieldEl(field);
+      }
+      fieldEls['a'].onInput($el=>{
+        fieldEls['a_accept'].val($el.val());
+      });
+      fieldEls['b'].onInput($el=>{
+        fieldEls['b_accept'].val($el.val());
+      });
       let $submit=$(`<button class="primary-button">submit</button>`);
       el$.push($submit);
       $addField.append(el$);
