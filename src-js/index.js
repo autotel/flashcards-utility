@@ -17,27 +17,39 @@ api.getAll().then(function(cardsList){
     }
     return chosen;
   }
-
+  
   var displayer=new(function($main){
     let $flashField=$(`<div class="flashcard-container"></div>`);
     let $addField=$(`<div class="editor-container"></div>`);
     $flashField.appendTo($main);
     $addField.appendTo($main);
+
+    function getPhrase(card,side){
+      if(!card[side+"_phrase"])card[side+"_phrase"]=card[side];
+      let ret=`<span class="example-phrase-${side}">${card[side+"_phrase"]}</span>`;
+      // ret+="-"+card[side+"_accept"];
+      ret=ret.replace(new RegExp(card[side+"_accept"],"gi"),`<span class="target-word">$&</span>`);
+      return ret;
+    }
+    function getRandomSide(){
+      return (["a","b"]).sort(a=>.5-Math.random());
+    }
     //ordered by confidence
     let userTestFuction=[
       function(card,answerCallback){
         //confidence 0: choose among two options
+        let side=getRandomSide();
         let el$=[];
-        let $question=$(`<span class="question confidence-0"> ${card.a}</span>`);
+        let $question=$(`<span class="question confidence-0"> ${getPhrase(card,side[0])}</span>`);
         let $input=$(`<input type="text" class="answer-type-text"></input>`);
         el$.push($question,$input);
-        let options=[card.b];
+        let options=[card[side[1]]];
         let otherCardN=Math.round(Math.random(cardsList.length-1));
         while(cardsList[otherCardN]==card){
           otherCardN=Math.round(Math.random(cardsList.length-1));
         }
         options.push(
-          cardsList[otherCardN].b
+          cardsList[otherCardN][side[1]]
         );
         options.sort(function() {
           return .5 - Math.random();
@@ -53,7 +65,8 @@ api.getAll().then(function(cardsList){
         }
         let $evaluate=$(`<button class="primary-button">evaluate</button>`);
         el$.push($evaluate);
-        let evaluator=new RegExp("\\b"+card.b_accept+"\\b","gi");
+        let evaluator=new RegExp("\\b"+card[side[1]+"_accept"]+"\\b","gi");
+        console.log(card[side[1]+"_accept"]);
         $flashField.append(el$);
         $input.on("input type change",function(){
           console.log($input.val().match(evaluator));
@@ -65,11 +78,12 @@ api.getAll().then(function(cardsList){
       },
       function(card,answerCallback){
         //confidence 1: choose among six options
+        let side=getRandomSide();
         let el$=[];
-        let $question=$(`<span class="question confidence-0"> ${card.a}</span>`);
+        let $question=$(`<span class="question confidence-0"> ${getPhrase(card,side[0])}</span>`);
         let $input=$(`<input type="text" class="answer-type-text"></input>`);
         el$.push($question,$input);
-        let options=[card.b];
+        let options=[card[side[1]]];
         let $optionsField=$(`<span class="options-field"></span>`);
         el$.push($optionsField);
         for(let a=0; a<6; a++){
@@ -78,7 +92,7 @@ api.getAll().then(function(cardsList){
             otherCardN=Math.round(Math.random(cardsList.length-1));
           }
           options.push(
-            cardsList[otherCardN].b
+            cardsList[otherCardN][side[1]]
           );
         }
         options.sort(function() {
@@ -93,7 +107,8 @@ api.getAll().then(function(cardsList){
         }
         let $evaluate=$(`<button class="primary-button">evaluate</button>`);
         el$.push($evaluate);
-        let evaluator=new RegExp("\\b"+card.b_accept+"\\b","gi");
+        let evaluator=new RegExp("\\b"+card[side[1]+"_accept"]+"\\b","gi");
+        console.log(card[side[1]+"_accept"]);
         $flashField.append(el$);
         $input.on("input type change",function(){
           console.log($input.val().match(evaluator));
@@ -105,8 +120,9 @@ api.getAll().then(function(cardsList){
       },
       function(card,answerCallback){
         //confidence 2: choose syllabes in order
+        let side=getRandomSide();
         let el$=[];
-        let $question=$(`<span class="question confidence-0"> ${card.a}</span>`);
+        let $question=$(`<span class="question confidence-0">${getPhrase(card,side[0])}</span>`);
         let $input=$(`<input type="text" class="answer-type-text"></input>`);
         el$.push($question,$input);
         let $optionsField=$(`<span class="options-field"></span>`);
@@ -122,7 +138,7 @@ api.getAll().then(function(cardsList){
             return string.match(/./g);
           }
         }
-        let options=arbitrarySplit(card.b);
+        let options=arbitrarySplit(card[side[1]]);
         for(let a=0; a<3; a++){
           let otherCardN=Math.round(Math.random(cardsList.length-1));
           while(cardsList[otherCardN]==card){
@@ -144,7 +160,8 @@ api.getAll().then(function(cardsList){
         }
         let $evaluate=$(`<button class="primary-button">evaluate</button>`);
         el$.push($evaluate);
-        let evaluator=new RegExp("\\b"+card.b_accept+"\\b","gi");
+        let evaluator=new RegExp("\\b"+card[side[1]+"_accept"]+"\\b","gi");
+        console.log(card[side[1]+"_accept"]);
         $flashField.append(el$);
         $input.on("input type change",function(){
           console.log($input.val().match(evaluator));
@@ -156,11 +173,14 @@ api.getAll().then(function(cardsList){
       },
       function(card,answerCallback){
         //confidence 3: type, good text is highlighted
+        let side=getRandomSide();
+
         console.log("gui start");
-        let $question=$(`<span class="question confidence-3"> ${card.a}</span>`);
+        let $question=$(`<span class="question confidence-3">${getPhrase(card,side[0])}</span>`);
         let $input=$(`<input type="text" class="answer-type-text"></input>`);
         let $evaluate=$(`<button class="primary-button">evaluate</button>`);
-        let evaluator=new RegExp("\\b"+card.b_accept+"\\b","gi");
+        let evaluator=new RegExp("\\b"+card[side[1]+"_accept"]+"\\b","gi");
+        console.log(card[side[1]+"_accept"]);
         $flashField.append([$question,$input,$evaluate]);
         $input.on("input type change",function(){
           console.log($input.val().match(evaluator));
@@ -172,11 +192,13 @@ api.getAll().then(function(cardsList){
       },
       function(card,answerCallback){
         //confidence 4: i don't know yet.
+        let side=getRandomSide();
         console.log("gui start");
-        let $question=$(`<span class="question confidence-4"> ${card.a}</span>`);
+        let $question=$(`<span class="question confidence-4">${getPhrase(card,"a")}</span>`);
         let $input=$(`<input type="text" class="answer-type-text"></input>`);
         let $evaluate=$(`<button class="primary-button">evaluate</button>`);
-        let evaluator=new RegExp("\\b"+card.b_accept+"\\b","gi");
+        let evaluator=new RegExp("\\b"+card[side[1]+"_accept"]+"\\b","gi");
+        console.log(card[side[1]+"_accept"]);
         $flashField.append([$question,$input,$evaluate]);
         $input.on("input type change",function(){
           console.log($input.val().match(evaluator));
@@ -188,11 +210,13 @@ api.getAll().then(function(cardsList){
       },
       function(card,answerCallback){
         //confidence 5: type, no clues given
+        let side=getRandomSide();
         console.log("gui start");
-        let $question=$(`<span class="question confidence-5"> ${card.a}</span>`);
+        let $question=$(`<span class="question confidence-5">${getPhrase(card,"a")}</span>`);
         let $input=$(`<input type="text" class="answer-type-text"></input>`);
         let $evaluate=$(`<button class="primary-button">evaluate</button>`);
-        let evaluator=new RegExp("\\b"+card.b_accept+"\\b","gi");
+        let evaluator=new RegExp("\\b"+card[side[1]+"_accept"]+"\\b","gi");
+        console.log(card[side[1]+"_accept"]);
         $flashField.append([$question,$input,$evaluate]);
         $input.on("input type change",function(){
           console.log($input.val().match(evaluator));
@@ -230,8 +254,10 @@ api.getAll().then(function(cardsList){
       var fields=[
         // "unique",
         "a",
+        "a_phrase",
         "a_accept",
         "b",
+        "b_phrase",
         "b_accept",
         "mnem",
         // "lastpracticed",
@@ -242,10 +268,17 @@ api.getAll().then(function(cardsList){
       for(let field of fields){
         let $question=$(`<span class="field-title field-${field}-title">${field}</span>`);
         let $input=$(`<input type="text" class="field-${field}-input field-input"></input>`);
-        $input.on("input type change",function(){
-          newCard[field]=$input.val();
-          console.log(newCard);
-        });
+        if(field=="a"||field=="b"){
+          $input.on("input type change",function(){
+            newCard[field]=$input.val();
+            console.log(newCard);
+          });
+        }else{
+          $input.on("input type change",function(){
+            newCard[field]=$input.val();
+            console.log(newCard);
+          });
+        }
         el$.push($question,$input);
       }
       let $submit=$(`<button class="primary-button">submit</button>`);

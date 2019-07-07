@@ -63,6 +63,9 @@ body{
     -webkit-box-shadow: 3px 3px 4px 0 rgb(0,0,0);
     box-shadow: 3px 3px 4px 0 rgba(0,0,0,0.4);
 }
+.flashcard-container .target-word{
+    font-weight: 1000;
+}
 .flashcard-container{
     text-align: center;
     

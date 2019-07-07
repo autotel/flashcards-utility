@@ -31,7 +31,7 @@ const ApiInterface=function(){
             }
             //can be optimized, I am splitting quite too often by ";"
             let split=self.history.split(";");
-            self.confidence=split.map(forceInt).reduce((a,b)=>a+b)/split.length;
+            self.confidence=split.map(forceInt).reduce((a,b)=>a+b)/scoreHistoryLength;
             console.log(self.history,self.history.split(";"),self.confidence);
         }
         this.appendScore=function(score){
