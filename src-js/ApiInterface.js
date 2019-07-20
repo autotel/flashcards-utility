@@ -54,16 +54,19 @@ const ApiInterface=function(){
             let ret = new Promise(function(resolve,reject){
                 $.ajax(`./api`,{
                     dataType: "text",
-                    data:{
-                        action:"update",
-                        unique:self.unique,
-                        a:self.a,
-                        a_accept:self.a_accept,
-                        b:self.b,
-                        b_accept:self.b_accept,
-                        mnem:self.mnem,
-                        lastpracticed:self.lastpracticed,
-                        history:self.history,
+                    data: {
+                        action:"write",
+                        //TODO: only write what has changed.
+                        cards:[{
+                            unique:self.unique,
+                            a:self.a,
+                            a_accept:self.a_accept,
+                            b:self.b,
+                            b_accept:self.b_accept,
+                            mnem:self.mnem,
+                            lastpracticed:self.lastpracticed,
+                            history:self.history
+                        }]
                     }
                 }).then(function(contents){
                     let parsed=JSON.parse(contents);
@@ -86,13 +89,14 @@ const ApiInterface=function(){
         calculateConfidence();
         updatePriority();
     }
-    this.addCards=function(cardslist){
+    this.writeCards=function(cardslist){
+        console.log(cardslist);
         let ret = new Promise(function(resolve,reject){
             $.ajax(`./api`,{
                 dataType: "json",
                 data:{
-                    action:"add",
-                    cards:cardslist//.map(itm=>itm.getBasicData())
+                    action:"write",
+                    cards:cardslist
                 }
             }).then(function(contents){
                 console.log(contents);
@@ -106,7 +110,6 @@ const ApiInterface=function(){
         });
         return ret;
     }
-    window.addCards=this.addCards;
     this.getAll=function(){
         let ret = new Promise(function(resolve,reject){
             $.ajax(`./api`,{

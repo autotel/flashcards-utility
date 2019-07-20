@@ -1,7 +1,7 @@
 <?php
 $actionName=$_GET['action'];
 $resp=Array();
-$resp['debug']=$_GET;
+$resp['debug']=Array('request'=>$_GET);
 //TODO: should be dynamic, and take the last alphabetically, since others are older copies of the db.
 $database=false;
 $databaseColumns=false;
@@ -35,13 +35,15 @@ function readDatabase(){
         $databaseColumns[$key]=trim($column);
     }
     $stillReading=fgetcsv ($handle);//so we skip name row
+    $itemNumber=0;
     while($stillReading){
-        $database[trim($stillReading[0])]=Array();
+        $database[$itemNumber]=Array();
         //build the "card" "objects" (array)
         foreach($databaseColumns as $key=>$column){
-            $database[trim($stillReading[0])][$column]=trim($stillReading[$key]);
+            $database[$itemNumber][$column]=trim($stillReading[$key]);
         }
         $stillReading=fgetcsv ($handle);
+        $itemNumber++;
     }
     if(!$database){
         $resp['error']="database couldn't be opened";
@@ -60,11 +62,20 @@ function getNewUnique(){
         die;
     }
     $try=$lastNewUnique;
+    //inefficient algorithm:
     while (true) {
-        if(!array_key_exists($try,$database)){
+        $used=false;
+        foreach ($database as $key => $item) {
+            if($item['unique']==$try){
+                $used=true;
+                break;
+            }
+        }
+        if($used){
+            $try++;
+        }else{
             return $try;
         }
-        $try++;
     }
 }
 function writeDatabase(){
@@ -76,7 +87,8 @@ function writeDatabase(){
         $handle = fopen ($dataAddr,'w+');
         fputcsv($handle,$databaseColumns);
         foreach ($database as $key => $item) {
-            fputcsv($handle,$item);
+            if($item!==false)
+                fputcsv($handle,$item);
         }
         fclose($handle);
     }catch(Exception $e){
@@ -106,84 +118,120 @@ switch ($actionName) {
         backupCheck(true);
         break;
     }
-    case 'update':{
+    case 'write':{
         //TODO: should be a list, for consistency with "add" and for more economic saving of stuff.
         readDatabase();
-        requireGetParameter('unique');
-        $found=false;
-        //if unique is "new", then create new. currently untested
-        if($_GET['unique']=="new"){
-            $key=getNewUnique();
-            $_GET['unique']=$key;
-            array_push($database,Array('unique'=>$key));
-        }
-        //change values in $database
-        foreach ($database as $key => $item) {
-            
-            if($item['unique']==$_GET['unique']){
-                $found=true;
+        requireGetParameter('cards');
+        $changed=false;
+        foreach ($_GET['cards'] as $cardKey=>$inputCard) {
+            $found=false;
+            $isNew=false;
+            //if unique is "new", then create new. currently untested
+            if($inputCard['unique']=="new"){
+                $isNew=true;
+                $newUnique=getNewUnique();
+                $newCard=Array();
                 foreach($databaseColumns as $columnKey=>$column){
-                    if(array_key_exists($column,$_GET))
-                        $database[$key][$column]=$_GET[$column];
+                    if(array_key_exists($column,$inputCard))
+                        $newCard[$column]=$inputCard[$column];
+                };
+                $newCard['unique']=$newUnique;
+                array_push($database,$newCard);
+                $found=true;         
+                $resp['debug'][$newUnique]="created";
+            }else{
+                //if unique is not "new", then it means we are trying to edit an existing entry.
+                foreach ($database as $key => $currentCard) {
+                    if($currentCard['unique']==$inputCard['unique']){
+                        $found=true;
+                        foreach($databaseColumns as $columnKey=>$column){
+                            if(array_key_exists($column,$inputCard))
+                                $database[$key][$column]=$inputCard[$column];
+                        }
+                        $resp['debug'][$currentCard['unique']]="modified";
+                        break;
+                    }
                 }
-                //TODO: refactor this crap
-                // if(array_key_exists('unique',$_GET))
-                //     $database[$key]['unique']=$_GET['unique'];
-                // if(array_key_exists('a',$_GET))
-                //     $database[$key]['a']=$_GET['a'];
-                // if(array_key_exists('a_accept',$_GET))
-                //     $database[$key]['a_accept']=$_GET['a_accept'];
-                // if(array_key_exists('b',$_GET))
-                //     $database[$key]['b']=$_GET['b'];
-                // if(array_key_exists('b_accept',$_GET))
-                //     $database[$key]['b_accept']=$_GET['b_accept'];
-                // if(array_key_exists('mnem',$_GET))
-                //     $database[$key]['mnem']=$_GET['mnem'];
-                // if(array_key_exists('lastpracticed',$_GET))
-                //     $database[$key]['lastpracticed']=$_GET['lastpracticed'];
-                // if(array_key_exists('history',$_GET))
-                //     $database[$key]['history']=$_GET['history'];
-                // if(array_key_exists('phrase',$_GET))
-                //     $database[$key]['phrase']=$_GET['phrase'];
-
-                break;
+            }
+            if($found){
+                $changed=true;
+            }else{
+                $resp['debug'][$cardKey]="nothing written: unique is not 'new' nor it existed in current database";
             }
         }
-        if($found){
-            //then write the $database
+        if($changed){
             writeDatabase();
         }else{
-            $resp['error']="There was no element with that unique to write onto. ";
+            $resp['debug']['warn']="no changes done";
         }
         break;
     }
-    case 'add':{
+    case 'delete':{
+        //TODO: should be a list, for consistency with "add" and for more economic saving of stuff.
         readDatabase();
         requireGetParameter('cards');
-        $news=false;
-        //change values in $database
-        foreach ($_GET['cards'] as $item) {
-            $nitm=Array();
-            foreach($databaseColumns as $key=>$column){
-                $nitm[$column]=$item[$column];
+        $changed=false;
+        foreach ($_GET['cards'] as $cardKey=>$inputCard) {
+            $found=false;
+            foreach ($database as $key => $currentCard) {
+                if($currentCard['unique']==$inputCard['unique']){
+                    $found=true;
+                    $resp['debug'][$currentCard['unique']]="deleted";
+                    unset($database[$key]);
+                    break;
+                }
             }
-            $nitm['unique']=getNewUnique();
-            array_push($database,$nitm);
-            $news=true;
+            if($found){
+                $changed=true;
+            }else{
+                $resp['debug'][$cardKey]="nothing deleted: unique nonexistent in current database";
+            }
         }
-        if($news){
-            //then write the $database
+        if($changed){
             writeDatabase();
         }else{
-            $resp['error']="No valid list of new elements was provided. ";
+            $resp['debug']['warn']="no changes done";
         }
         break;
+    }
+    // case 'add':{
+    //     readDatabase();
+    //     requireGetParameter('cards');
+    //     $news=false;
+    //     //change values in $database
+    //     foreach ($_GET['cards'] as $item) {
+    //         $nitm=Array();
+    //         foreach($databaseColumns as $key=>$column){
+    //             $nitm[$column]=$item[$column];
+    //         }
+    //         $nitm['unique']=getNewUnique();
+    //         array_push($database,$nitm);
+    //         $news=true;
+    //     }
+    //     if($news){
+    //         //then write the $database
+    //         writeDatabase();
+    //     }else{
+    //         $resp['error']="No valid list of new elements was provided. ";
+    //     }
+    //     break;
+    // }
+    case 'admin':{
+        readDatabase();
+        echo ("<h2>Manage entries:</h2>");
+        echo ("<ul>");
+        foreach($database as $key=>$item){
+            echo ('<li>');
+            echo ('<a href="?'.http_build_query(Array('action'=>'delete','cards'=>Array(Array('unique'=>$item['unique'])))).'">delete</a>');
+            echo(' '.implode(", ",$item).'</li>');
+        }
+        echo ("</ul>");        
+        echo ("<h2>Json response:</h2>");
+        break;
+    
     }
     case 'log':{
         readDatabase();
-        echo ("<pre>");
-        backupCheck();
-        echo ("</pre>");
 
         echo ("<pre>");
         include($dataAddr);

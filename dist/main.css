@@ -3,6 +3,10 @@ body{
     font:lora;
     font-size:30px;
 }
+hr {
+    opacity: 0.5;
+    border-top: none;
+}
 .flashcard-container .question{
     text-align: center;
     display: block;
