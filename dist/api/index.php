@@ -150,8 +150,11 @@ switch ($actionName) {
                 $newUnique=getNewUnique();
                 $newCard=Array();
                 foreach($databaseColumns as $columnKey=>$column){
-                    if(array_key_exists($column,$inputCard))
+                    if(array_key_exists($column,$inputCard)){
                         $newCard[$column]=$inputCard[$column];
+                    }else{
+                        $database[$key][$column]="";
+                    }
                 };
                 $newCard['unique']=$newUnique;
                 array_push($database,$newCard);
@@ -163,8 +166,11 @@ switch ($actionName) {
                     if($currentCard['unique']==$inputCard['unique']){
                         $found=true;
                         foreach($databaseColumns as $columnKey=>$column){
-                            if(array_key_exists($column,$inputCard))
+                            if(array_key_exists($column,$inputCard)){
                                 $database[$key][$column]=$inputCard[$column];
+                            }else{
+                                $database[$key][$column]="";
+                            }
                         }
                         $resp['debug'][$currentCard['unique']]="modified";
                         break;

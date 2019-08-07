@@ -1,6 +1,23 @@
 import $ from "jQuery";
 import api from "./ApiInterface.js";
+function unsort(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
 
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+};
 api.getAll().then(function(cardsList){
   let $main=$('body');
   let currentCard=false;
@@ -85,7 +102,7 @@ api.getAll().then(function(cardsList){
           console.log($input.val().match(evaluator));
         });
         $evaluate.on("click",function(){
-          answerCallback($input.val().match(evaluator)?5:0);
+          answerCallback($input.val().match(evaluator)?5:0,$input.val());
           console.log($input.val().match(evaluator)?true:false);
         });
       },
@@ -108,9 +125,10 @@ api.getAll().then(function(cardsList){
             cardsList[otherCardN][side[1]]
           );
         }
-        options.sort(function() {
-          return .5 - Math.random();
-        });
+
+        //blatantly copied code:
+        options=unsort(options);
+
         for(let optionText of options){
           let $option=$(`<button class="option">${optionText}</button>`);
           $optionsField.append($option);
@@ -127,7 +145,7 @@ api.getAll().then(function(cardsList){
           console.log($input.val().match(evaluator));
         });
         $evaluate.on("click",function(){
-          answerCallback($input.val().match(evaluator)?5:0);
+          answerCallback($input.val().match(evaluator)?5:0,$input.val());
           console.log($input.val().match(evaluator)?true:false);
         });
       },
@@ -142,13 +160,13 @@ api.getAll().then(function(cardsList){
         el$.push($optionsField);
         function arbitrarySplit(string){
           if(string.length>30){
-            return string.match(/([^\s]{2,100})|[^\s]+/g);
+            return string.match(/([^\s]{2,100}| )|[^\s]+/g);
           }else if(string.length>10){
-            return string.match(/([^\s]{2,3})|[^\s]+/g);
+            return string.match(/([^\s]{2,3})|[^\s]+| /g);
           }else if(string.length>3){
-            return string.match(/([^\s]{2})|[^\s]+/g);
+            return string.match(/([^\s]{2})|[^\s]+| /g);
           }else{
-            return string.match(/./g);
+            return string.match(/.| /g);
           }
         }
         let options=arbitrarySplit(card[side[1]]);
@@ -161,9 +179,7 @@ api.getAll().then(function(cardsList){
             arbitrarySplit(cardsList[otherCardN].b)
           );
         }
-        options.sort(function() {
-          return .5 - Math.random();
-        });
+        options=unsort(options);
         for(let optionText of options){
           let $option=$(`<button class="option">${optionText}</button>`);
           $optionsField.append($option);
@@ -180,7 +196,7 @@ api.getAll().then(function(cardsList){
           console.log($input.val().match(evaluator));
         });
         $evaluate.on("click",function(){
-          answerCallback($input.val().match(evaluator)?5:0);
+          answerCallback($input.val().match(evaluator)?5:0,$input.val());
           console.log($input.val().match(evaluator)?true:false);
         });
       },
@@ -199,7 +215,7 @@ api.getAll().then(function(cardsList){
           console.log($input.val().match(evaluator));
         });
         $evaluate.on("click",function(){
-          answerCallback($input.val().match(evaluator)?5:card.confidence-1);
+          answerCallback($input.val().match(evaluator)?5:0,$input.val());
           console.log($input.val().match(evaluator)?true:false);
         });
       },
@@ -217,7 +233,7 @@ api.getAll().then(function(cardsList){
           console.log($input.val().match(evaluator));
         });
         $evaluate.on("click",function(){
-          answerCallback($input.val().match(evaluator)?5:card.confidence-1);//TODO count amt of correct characters in the right order.
+          answerCallback($input.val().match(evaluator)?5:0,$input.val());//TODO count amt of correct characters in the right order.
           console.log($input.val().match(evaluator)?true:false);
         });
       },
@@ -235,7 +251,7 @@ api.getAll().then(function(cardsList){
           console.log($input.val().match(evaluator));
         });
         $evaluate.on("click",function(){
-          answerCallback($input.val().match(evaluator)?5:0);//TODO count amt of correct characters in the right order.
+          answerCallback($input.val().match(evaluator)?5:0,$input.val());//TODO count amt of correct characters in the right order.
           console.log($input.val().match(evaluator)?true:false);
         });
       },
@@ -243,14 +259,27 @@ api.getAll().then(function(cardsList){
     function displayQuestion(card){
       currentCard=card;
       $flashField.html("");
-      userTestFuction[Math.floor(card.confidence)](card,function(score){
-        $flashField.html(`<span class="result-feedback">
-          <span class="score">${score}</span>
-          <span class="correct">${card.a}-&gt;${card.b}</span>
-        </span>`);
+      userTestFuction[Math.floor(card.confidence)](card,function(score,response){
+        $flashField.html(`
+          <span class="result-feedback score-${score}">
+            <span class="correct-a"> ${getPhrase(card,"a")}</span>
+            <hr>
+            <span class="correct-b"> ${getPhrase(card,"b")}</span>
+            <hr>
+            <span class="user-answer"> ${response}</span>
+          </span>
+        `);
+
         card.appendScore(score);
         console.log("user scored",score,card);
-        setTimeout(nextQuestion,1000);
+        let nextQuestionTimeout=setTimeout(nextQuestion,2000);
+        //todo: this is ugly way to do it
+        $('span.result-feedback').on('mousedown',()=>{
+          clearTimeout(nextQuestionTimeout);
+        });
+        $('span.result-feedback').on('mouseup',()=>{
+          nextQuestion();
+        });
       });
     };
 
@@ -321,7 +350,13 @@ api.getAll().then(function(cardsList){
       el$.push($submit);
       $addField.append(el$);
       $submit.on("click",function(){
-        api.writeCards([newCard]).then(console.log).catch(console.error);
+        api.writeCards([newCard]).then(function(resp){
+          console.log(resp);
+          $addField.html(JSON.stringify(resp));
+          setTimeout(function(){
+            displayAddForm();
+          },2000);
+        }).catch(console.error);
       });
     };
     function nextQuestion(){
