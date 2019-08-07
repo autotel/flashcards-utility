@@ -100,11 +100,18 @@ api.getAll().then(function(cardsList){
         $flashField.append(el$);
         $input.on("input type change",function(){
           console.log($input.val().match(evaluator));
+          submit();
         });
-        $evaluate.on("click",function(){
+        function submit(){
           answerCallback($input.val().match(evaluator)?5:0,$input.val());
           console.log($input.val().match(evaluator)?true:false);
+        };
+        $input.on('keyup', function (e) {
+          if (e.keyCode == 13) {
+            submit();
+          }
         });
+        $evaluate.on("click",submit);
       },
       function(card,answerCallback){
         //confidence 1: choose among six options
@@ -141,13 +148,23 @@ api.getAll().then(function(cardsList){
         let evaluator=new RegExp("\\b"+card[side[1]+"_accept"]+"\\b","gi");
         console.log(card[side[1]+"_accept"]);
         $flashField.append(el$);
-        $input.on("input type change",function(){
-          console.log($input.val().match(evaluator));
-        });
-        $evaluate.on("click",function(){
+
+        function submit(){
           answerCallback($input.val().match(evaluator)?5:0,$input.val());
           console.log($input.val().match(evaluator)?true:false);
+        };
+
+        $input.on("input type change",function(){
+          console.log($input.val().match(evaluator));
+          submit();
         });
+        $input.on('keyup', function (e) {
+          if (e.keyCode == 13) {
+            submit();
+          }
+        });
+        $evaluate.on("click",submit);
+
       },
       function(card,answerCallback){
         //confidence 2: choose syllabes in order
@@ -192,13 +209,21 @@ api.getAll().then(function(cardsList){
         let evaluator=new RegExp("\\b"+card[side[1]+"_accept"]+"\\b","gi");
         console.log(card[side[1]+"_accept"]);
         $flashField.append(el$);
+
         $input.on("input type change",function(){
           console.log($input.val().match(evaluator));
         });
-        $evaluate.on("click",function(){
+        
+        function submit(){
           answerCallback($input.val().match(evaluator)?5:0,$input.val());
           console.log($input.val().match(evaluator)?true:false);
+        };
+        $input.on('keyup', function (e) {
+          if (e.keyCode == 13) {
+            submit();
+          }
         });
+        $evaluate.on("click",submit);
       },
       function(card,answerCallback){
         //confidence 3: type, good text is highlighted
@@ -214,10 +239,16 @@ api.getAll().then(function(cardsList){
         $input.on("input type change",function(){
           console.log($input.val().match(evaluator));
         });
-        $evaluate.on("click",function(){
+        function submit(){
           answerCallback($input.val().match(evaluator)?5:0,$input.val());
           console.log($input.val().match(evaluator)?true:false);
+        };
+        $input.on('keyup', function (e) {
+          if (e.keyCode == 13) {
+            submit();
+          }
         });
+        $evaluate.on("click",submit);
       },
       function(card,answerCallback){
         //confidence 4: i don't know yet.
@@ -232,10 +263,16 @@ api.getAll().then(function(cardsList){
         $input.on("input type change",function(){
           console.log($input.val().match(evaluator));
         });
-        $evaluate.on("click",function(){
-          answerCallback($input.val().match(evaluator)?5:0,$input.val());//TODO count amt of correct characters in the right order.
+        function submit(){
+          answerCallback($input.val().match(evaluator)?5:0,$input.val());
           console.log($input.val().match(evaluator)?true:false);
+        };
+        $input.on('keyup', function (e) {
+          if (e.keyCode == 13) {
+            submit();
+          }
         });
+        $evaluate.on("click",submit);
       },
       function(card,answerCallback){
         //confidence 5: type, no clues given
@@ -250,10 +287,16 @@ api.getAll().then(function(cardsList){
         $input.on("input type change",function(){
           console.log($input.val().match(evaluator));
         });
-        $evaluate.on("click",function(){
-          answerCallback($input.val().match(evaluator)?5:0,$input.val());//TODO count amt of correct characters in the right order.
+        function submit(){
+          answerCallback($input.val().match(evaluator)?5:0,$input.val());
           console.log($input.val().match(evaluator)?true:false);
+        };
+        $input.on('keyup', function (e) {
+          if (e.keyCode == 13) {
+            submit();
+          }
         });
+        $evaluate.on("click",submit);
       },
     ];
     function displayQuestion(card){
