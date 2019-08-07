@@ -3,6 +3,7 @@ import api from "./ApiInterface.js";
 
 api.getAll().then(function(cardsList){
   let $main=$('body');
+  let currentCard=false;
   function chooseNextCardToPractice(){
     let chosen=cardsList[0];
     for(var card of cardsList){
@@ -17,7 +18,11 @@ api.getAll().then(function(cardsList){
     }
     return chosen;
   }
-  
+  function cardWithUnique(unique){
+    for(let card of cardsList){
+      if(card.unique==unique) return card;
+    }
+  }
   var displayer=new(function($main){
     let $flashField=$(`<div class="flashcard-container"></div>`);
     let $addField=$(`<div class="editor-container"></div>`);
@@ -236,6 +241,7 @@ api.getAll().then(function(cardsList){
       },
     ];
     function displayQuestion(card){
+      currentCard=card;
       $flashField.html("");
       userTestFuction[Math.floor(card.confidence)](card,function(score){
         $flashField.html(`<span class="result-feedback">
@@ -252,6 +258,7 @@ api.getAll().then(function(cardsList){
     function displayAddForm(){
       $addField.html("");
       var fields=[
+        ["unique","<hr>unique"],
         ["a","english"],
         ["a_phrase","phrase"],
         ["a_accept","regexp"],
@@ -260,9 +267,13 @@ api.getAll().then(function(cardsList){
         ["b_accept","regexp"],
         ["mnem","mnemonic"],
       ];
+      
       var newCard={};
       var el$=[];
-      var fieldEls=[];
+      let $editButton=$(`<button class="edit">edit</button>`);
+      let $newButton=$(`<button class="add">add</button>`);
+      el$.push($editButton,$newButton);
+      var fieldEls={};
       function FieldEl(field){
         fieldEls[field[0]]=this;
         let $question=$(`<span class="field-title field-${field[0]}-title">${field[1]}</span>`);
@@ -283,6 +294,23 @@ api.getAll().then(function(cardsList){
       for(let field of fields){
         new FieldEl(field);
       }
+      $editButton.on('click',function(){
+        fieldEls['unique'].val(currentCard.unique);
+        newCard['unique']=currentCard.unique;
+      })
+      $newButton.on('click',function(){
+        fieldEls['unique'].val('new');
+        newCard['unique']='new';
+      })
+      fieldEls['unique'].onInput($el=>{
+        for(let fieldElName in fieldEls){
+          if(fieldElName!='unique'){
+            let cwu=cardWithUnique($el.val());
+            if(cwu)
+              fieldEls[fieldElName].val(cwu[fieldElName]);
+          }
+        }
+      });
       fieldEls['a'].onInput($el=>{
         fieldEls['a_accept'].val($el.val());
       });
@@ -293,7 +321,7 @@ api.getAll().then(function(cardsList){
       el$.push($submit);
       $addField.append(el$);
       $submit.on("click",function(){
-        api.addCards([newCard]).then(console.log).catch(console.error);
+        api.writeCards([newCard]).then(console.log).catch(console.error);
       });
     };
     function nextQuestion(){
