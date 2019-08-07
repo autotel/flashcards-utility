@@ -6,6 +6,23 @@ $resp['debug']=Array('request'=>$_GET);
 $database=false;
 $databaseColumns=false;
 $dataAddr = './data/cards/00.csv';
+
+//find the newest version of the db file
+function useNewestCopy(){
+    global $dataAddr;
+    global $resp;
+    $dataFolder;
+    preg_match("/([^\/]*\/)+/",$dataAddr,$dataFolder);
+    $dataFolder=$dataFolder[0];
+    $backups=scandir($dataFolder);
+    rsort($backups);
+    $newestBackup=$backups[0];
+    $dataAddr=$dataFolder.$newestBackup;
+    $resp['debug']['db file']= $dataAddr;
+    $backupChecked=false;
+}
+useNewestCopy();
+
 function backupCheck($force=false){
     global $dataAddr;
     global $resp;
@@ -18,10 +35,11 @@ function backupCheck($force=false){
     $newestBackup=intval($backups[0]);
     $resp['database-backup-check']['newest-backup']=$newestBackup;
     if($newestBackup+(7*24*60*600)<time() || $force){
-        $naddr=$dataFolder."".time().".backpup.csv";
+        $naddr=$dataFolder."".time().".backup.csv";
         copy ($dataAddr,$naddr);
         $resp['database-backup-check']['backup-performed']=$naddr;
 
+        useNewestCopy();
     }
 }
 function readDatabase(){
