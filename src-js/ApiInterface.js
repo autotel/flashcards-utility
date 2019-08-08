@@ -2,7 +2,7 @@ import $ from "jQuery";
 // import Papa from "papaparse";
 const scoreHistoryLength=4;
 const confidenceWeight=1;
-const dateWeight=30/24/60; //30 days weighs same as 1 in confidence, 5 being that it's always answered correct
+const dateWeight=((30/24)/60)/5; //30 days weighs same as 1 in confidence, 5 being that it's always answered correct
 const confidenceIdeal=5;
 let dateIdeal=Date.now();
 
@@ -26,13 +26,13 @@ const ApiInterface=function(){
         }
         function calculateConfidence(){
             if(!self.history){
-                console.error("card doesn't have history field",self);
                 self.history="";
             }
             //can be optimized, I am splitting quite too often by ";"
             let split=self.history.split(";");
             self.confidence=split.map(forceInt).reduce((a,b)=>a+b)/scoreHistoryLength;
-            console.log(self.history,self.history.split(";"),self.confidence);
+            self.lastpracticed=forceInt(self.lastpracticed);
+            console.log(self.unique,self.history,split,self.confidence,self.lastpracticed);
         }
         this.appendScore=function(score){
             score=Math.max(0,Math.floor(score));

@@ -95,7 +95,7 @@ api.getAll().then(function(cardsList){
         }
         let $evaluate=$(`<button class="primary-button">evaluate</button>`);
         el$.push($evaluate);
-        let evaluator=new RegExp("\\b"+card[side[1]+"_accept"]+"\\b","gi");
+        let evaluator=new RegExp(card[side[1]+"_accept"],"gi");
         console.log(card[side[1]+"_accept"]);
         $flashField.append(el$);
         $input.on("input type change",function(){
@@ -145,7 +145,7 @@ api.getAll().then(function(cardsList){
         }
         let $evaluate=$(`<button class="primary-button">evaluate</button>`);
         el$.push($evaluate);
-        let evaluator=new RegExp("\\b"+card[side[1]+"_accept"]+"\\b","gi");
+        let evaluator=new RegExp(card[side[1]+"_accept"],"gi");
         console.log(card[side[1]+"_accept"]);
         $flashField.append(el$);
 
@@ -206,7 +206,7 @@ api.getAll().then(function(cardsList){
         }
         let $evaluate=$(`<button class="primary-button">evaluate</button>`);
         el$.push($evaluate);
-        let evaluator=new RegExp("\\b"+card[side[1]+"_accept"]+"\\b","gi");
+        let evaluator=new RegExp(card[side[1]+"_accept"],"gi");
         console.log(card[side[1]+"_accept"]);
         $flashField.append(el$);
 
@@ -233,7 +233,7 @@ api.getAll().then(function(cardsList){
         let $question=$(`<span class="question confidence-3">${getPhrase(card,side[0])}</span>`);
         let $input=$(`<input type="text" class="answer-type-text"></input>`);
         let $evaluate=$(`<button class="primary-button">evaluate</button>`);
-        let evaluator=new RegExp("\\b"+card[side[1]+"_accept"]+"\\b","gi");
+        let evaluator=new RegExp(card[side[1]+"_accept"],"gi");
         console.log(card[side[1]+"_accept"]);
         $flashField.append([$question,$input,$evaluate]);
         $input.on("input type change",function(){
@@ -257,7 +257,7 @@ api.getAll().then(function(cardsList){
         let $question=$(`<span class="question confidence-4">${getPhrase(card,"a")}</span>`);
         let $input=$(`<input type="text" class="answer-type-text"></input>`);
         let $evaluate=$(`<button class="primary-button">evaluate</button>`);
-        let evaluator=new RegExp("\\b"+card[side[1]+"_accept"]+"\\b","gi");
+        let evaluator=new RegExp(card[side[1]+"_accept"],"gi");
         console.log(card[side[1]+"_accept"]);
         $flashField.append([$question,$input,$evaluate]);
         $input.on("input type change",function(){
@@ -281,7 +281,7 @@ api.getAll().then(function(cardsList){
         let $question=$(`<span class="question confidence-5">${getPhrase(card,"a")}</span>`);
         let $input=$(`<input type="text" class="answer-type-text"></input>`);
         let $evaluate=$(`<button class="primary-button">evaluate</button>`);
-        let evaluator=new RegExp("\\b"+card[side[1]+"_accept"]+"\\b","gi");
+        let evaluator=new RegExp(card[side[1]+"_accept"],"gi");
         console.log(card[side[1]+"_accept"]);
         $flashField.append([$question,$input,$evaluate]);
         $input.on("input type change",function(){
@@ -368,11 +368,15 @@ api.getAll().then(function(cardsList){
       }
       $editButton.on('click',function(){
         fieldEls['unique'].val(currentCard.unique);
-        newCard['unique']=currentCard.unique;
+        newCard.unique=currentCard.unique;
+        newCard.history=currentCard.history;
+        newCard.lastpracticed=currentCard.lastpracticed;
       })
       $newButton.on('click',function(){
         fieldEls['unique'].val('new');
         newCard['unique']='new';
+        newCard.history="";
+        newCard.lastpracticed="";
       })
       fieldEls['unique'].onInput($el=>{
         for(let fieldElName in fieldEls){
@@ -395,7 +399,8 @@ api.getAll().then(function(cardsList){
       $submit.on("click",function(){
         api.writeCards([newCard]).then(function(resp){
           console.log(resp);
-          $addField.html(JSON.stringify(resp));
+          if(resp.error) $addField.html(JSON.stringify(resp.error));
+          if(resp.debug) $addField.html(JSON.stringify(resp.debug));
           setTimeout(function(){
             displayAddForm();
           },2000);
